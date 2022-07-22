@@ -11,7 +11,7 @@ HELM_EDIT_VERSION=${HELM_EDIT_VERSION:-"${DEFAULT_VERSION}"}
 file="${HELM_PLUGIN_DIR:-"$(helm home)/plugins/helm-edit"}/helm-edit"
 os=$(uname -s | tr '[:upper:]' '[:lower:]')
 
-if [[ "$(uname -m)" == "aarch64" -o "$(uname -m)" == "arm64" ]]; then
+if [[ "$(uname -m)" == "aarch64" || "$(uname -m)" == "arm64" ]]; then
   arch=arm64
 else
   arch=amd64
