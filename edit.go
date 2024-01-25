@@ -132,9 +132,11 @@ func (e *editCmd) run() error {
 
 	newValues, err := chartutil.ReadValuesFile(tmpfile.Name())
 	if err != nil {
-		return err
-	}
-	if err != nil {
+		contents, suberr := os.ReadFile(tmpfile.Name())
+		if suberr != nil {
+			return err
+		}
+		e.rescue(res.Namespace, res.Name, contents)
 		return err
 	}
 	var userSuppliedVal map[string]interface{}
@@ -157,6 +159,8 @@ func (e *editCmd) run() error {
 			res.Chart,
 			userSuppliedVal)
 		if err != nil {
+			fmt.Fprintf(e.out, "Edit failed.\n")
+			e.rescue(res.Namespace, res.Name, vals)
 			return err
 		}
 
@@ -168,4 +172,16 @@ func (e *editCmd) run() error {
 	}
 
 	return nil
+}
+
+func (e *editCmd) rescue(ns, name string, val []byte) {
+	tmpout, suberr := ioutil.TempFile(os.TempDir(), fmt.Sprintf("helm-edit-%s-%s-*.yaml", ns, name))
+	if suberr != nil {
+		return
+	}
+	_, suberr = tmpout.Write(val)
+	if suberr != nil {
+		return
+	}
+	fmt.Fprintf(e.out, "Values saved to %s\n", tmpout.Name())
 }
